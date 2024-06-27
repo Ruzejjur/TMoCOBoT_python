@@ -1,5 +1,5 @@
 # User defined files
-
+.DS_Stores
 *.csv
 
 # Byte-compiled / optimized / DLL files

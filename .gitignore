@@ -1,6 +1,7 @@
 # User defined files
 .DS_Stores
 *.csv
+*.png
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

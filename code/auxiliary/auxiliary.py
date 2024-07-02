@@ -8,7 +8,7 @@ def transform_to_weight_table_primary_modeler(primary_modelers_scores, opinion_c
         for j in range(primary_modelers_scores.shape[1]):
             if opinion_certainty_matrix[i, j] != 0 and primary_modelers_scores[i, j] != 0:
                 score = primary_modelers_scores[i, j] - 1  # Adjust for 0-based indexing
-                weight_table[i, score, j] += opinion_certainty_matrix[i, j]
+                weight_table[j, score, i] += opinion_certainty_matrix[i, j]
 
 
     return weight_table
@@ -80,16 +80,24 @@ def simulated_example(The_primary_modelers_scores, opinion_certainty, apply_cert
             for k in range(6):
                 Xiaomi_expert_opinion_weight_tables[j, k, i-20] = expert_opinion_weight_table[j,k]
 
-    Samsung_expert_opinion_weight_tables_trust = Samsung_expert_opinion_weight_tables * Trust_matrix[0, :, np.newaxis]
-    Iphone_expert_opinion_weight_tables_trust = Iphone_expert_opinion_weight_tables * Trust_matrix[1, :, np.newaxis]
-    Xiaomi_expert_opinion_weight_tables_trust = Xiaomi_expert_opinion_weight_tables * Trust_matrix[2, :, np.newaxis]
+    Samsung_expert_opinion_weight_tables_trust = np.zeros_like(Samsung_expert_opinion_weight_tables)
+    for i in range(Samsung_expert_opinion_weight_tables.shape[2]):
+        Samsung_expert_opinion_weight_tables_trust[:,:,i] = Samsung_expert_opinion_weight_tables[:,:,i]*Trust_matrix[0,i]
+    
+    Iphone_expert_opinion_weight_tables_trust = np.zeros_like(Iphone_expert_opinion_weight_tables)
+    for i in range(Iphone_expert_opinion_weight_tables.shape[2]):
+        Iphone_expert_opinion_weight_tables_trust[:,:,i] = Iphone_expert_opinion_weight_tables[:,:,i]*Trust_matrix[1,i]
+    
+    Xiaomi_expert_opinion_weight_tables_trust = np.zeros_like(Xiaomi_expert_opinion_weight_tables)
+    for i in range(Xiaomi_expert_opinion_weight_tables.shape[2]):
+        Xiaomi_expert_opinion_weight_tables_trust[:,:,i] = Xiaomi_expert_opinion_weight_tables[:,:,i]*Trust_matrix[2,i]
 
     The_cumulative_expert_weight = np.zeros((3, score_range_size, 3))
     The_cumulative_expert_weight[:, :, 0] = np.sum(Samsung_expert_opinion_weight_tables_trust, axis=2)
     The_cumulative_expert_weight[:, :, 1] = np.sum(Iphone_expert_opinion_weight_tables_trust, axis=2)
     The_cumulative_expert_weight[:, :, 2] = np.sum(Xiaomi_expert_opinion_weight_tables_trust, axis=2)
 
-    The_primary_modelers_updated_weights = The_cumulative_expert_weight + The_primary_modelers_weights[:, :, np.newaxis]
+    The_primary_modelers_updated_weights = The_cumulative_expert_weight + The_primary_modelers_weights
 
     The_primary_modelers_opinion_features_old, The_primary_modelers_aposterior_old = primary_modelers_aposterior_B(The_primary_modelers_weights, P_I_B, score_preference)
     The_primary_modelers_opinion_features_updated, The_primary_modelers_aposterior_updated = primary_modelers_aposterior_B(The_primary_modelers_updated_weights, P_I_B, score_preference)

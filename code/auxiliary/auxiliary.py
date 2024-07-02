@@ -61,15 +61,24 @@ def simulated_example(The_primary_modelers_scores, opinion_certainty, apply_cert
 
     Samsung_expert_opinion_weight_tables = np.zeros((3, score_range_size, 10))
     for i in range(10):
-        Samsung_expert_opinion_weight_tables[:, :, i] = transform_to_weight_table_primary_expert(expert_opinions[i], np.ones((1,3)), score_range_size, 0)
-
+        expert_opinion_weight_table = transform_to_weight_table_primary_expert(expert_opinions[i], np.ones((1,3)), score_range_size, 0)
+        for j in range(3):
+            for k in range(6):
+                Samsung_expert_opinion_weight_tables[j, k, i] = expert_opinion_weight_table[j,k]
+    
     Iphone_expert_opinion_weight_tables = np.zeros((3, score_range_size, 10))
-    for i in range(10):
-        Iphone_expert_opinion_weight_tables[:, :, i] = transform_to_weight_table_primary_expert(np.atleast_2d(expert_opinions[i]), np.ones(3), score_range_size, 0)
+    for i in range(10,20):
+        expert_opinion_weight_table = transform_to_weight_table_primary_expert(expert_opinions[i], np.ones((1,3)), score_range_size, 0)
+        for j in range(3):
+            for k in range(6):
+                Iphone_expert_opinion_weight_tables[j, k, i-10] = expert_opinion_weight_table[j,k]
 
     Xiaomi_expert_opinion_weight_tables = np.zeros((3, score_range_size, 10))
-    for i in range(20):
-        Xiaomi_expert_opinion_weight_tables[:, :, i] = transform_to_weight_table_primary_expert(np.atleast_2d(expert_opinions[i]), np.ones(3), score_range_size, 0)
+    for i in range(20,30):
+        expert_opinion_weight_table = transform_to_weight_table_primary_expert(expert_opinions[i], np.ones((1,3)), score_range_size, 0)
+        for j in range(3):
+            for k in range(6):
+                Xiaomi_expert_opinion_weight_tables[j, k, i-20] = expert_opinion_weight_table[j,k]
 
     Samsung_expert_opinion_weight_tables_trust = Samsung_expert_opinion_weight_tables * Trust_matrix[0, :, np.newaxis]
     Iphone_expert_opinion_weight_tables_trust = Iphone_expert_opinion_weight_tables * Trust_matrix[1, :, np.newaxis]

@@ -1,32 +1,32 @@
 import numpy as np
 
-def transform_to_weight_table_primary_modeler(primary_modelers_scores, opinion_certainty_matrix, score_range_size, low_weight_for_unselected_features):
-    primary_modelers_scores = np.atleast_2d(np.array(primary_modelers_scores))
-    weight_table = np.full((primary_modelers_scores.shape[1], score_range_size, primary_modelers_scores.shape[0]), low_weight_for_unselected_features)
+def generate_primary_modeler_weights(primary_modeler_scores, opinion_certainty_matrix, score_range, initial_feature_weight):
+    primary_modeler_scores = np.atleast_2d(np.array(primary_modeler_scores))
+    weight_table = np.full((primary_modeler_scores.shape[1], score_range, primary_modeler_scores.shape[0]), initial_feature_weight)
     
-    for i in range(primary_modelers_scores.shape[0]):
-        for j in range(primary_modelers_scores.shape[1]):
-            if opinion_certainty_matrix[i, j] != 0 and primary_modelers_scores[i, j] != 0:
-                score = primary_modelers_scores[i, j] - 1  # Adjust for 0-based indexing
+    for i in range(primary_modeler_scores.shape[0]):
+        for j in range(primary_modeler_scores.shape[1]):
+            if opinion_certainty_matrix[i, j] != 0 and primary_modeler_scores[i, j] != 0:
+                score = primary_modeler_scores[i, j] - 1  # Adjust for 0-based indexing
                 weight_table[j, score, i] += opinion_certainty_matrix[i, j]
 
 
     return weight_table
 
-def transform_to_weight_table_primary_expert(primary_modelers_scores, opinion_certainty_matrix, score_range_size, low_weight_for_unselected_features):
-    primary_modelers_scores = np.atleast_2d(np.array(primary_modelers_scores))
-    weight_table = np.full((primary_modelers_scores.shape[1], score_range_size, primary_modelers_scores.shape[0]), low_weight_for_unselected_features)
+def generate_expert_weights(expert_scores, opinion_certainty_matrix, score_range, initial_feature_weight):
+    expert_scores = np.atleast_2d(np.array(expert_scores))
+    weight_table = np.full((expert_scores.shape[1], score_range, expert_scores.shape[0]), initial_feature_weight)
     
-    for i in range(primary_modelers_scores.shape[0]):
-        for j in range(primary_modelers_scores.shape[1]):
-            if opinion_certainty_matrix[i, j] != 0 and primary_modelers_scores[i, j] != 0:
-                score = primary_modelers_scores[i, j] - 1  # Adjust for 0-based indexing
+    for i in range(expert_scores.shape[0]):
+        for j in range(expert_scores.shape[1]):
+            if opinion_certainty_matrix[i, j] != 0 and expert_scores[i, j] != 0:
+                score = expert_scores[i, j] - 1  # Adjust for 0-based indexing
                 weight_table[j, score, 0] += opinion_certainty_matrix[i, j]
 
 
     return weight_table
 
-def primary_modelers_aposterior_B(primary_modelers_weights, P_I_B, primary_modelers_score_preference):
+def primary_modelers_posterior_brands(primary_modelers_weights, P_I_B, primary_modelers_score_preference):
     primary_modelers_aposterior_B = np.ones((primary_modelers_weights.shape[2],))
     primary_modelers_opinion_features = np.zeros_like(primary_modelers_weights)
 
@@ -48,58 +48,58 @@ def primary_modelers_aposterior_B(primary_modelers_weights, P_I_B, primary_model
     return primary_modelers_opinion_features, primary_modelers_aposterior_B
 
 
-def simulated_example(The_primary_modelers_scores, opinion_certainty, apply_certainty, n_of_responders, Trust_matrix, score_preference, P_I_B, score_range_size, low_weight_for_unselected_features, *expert_opinions):
+def simulated_example(primary_modeler_scores, opinion_certainty_matrix, apply_certainty, number_of_responders, trust_matrix, score_preference, primary_modeler_brand_pref, score_range, initial_feature_weight, *expert_opinions):
     opinion_certainty_matrix = np.ones((3, 3))
     
     if apply_certainty:
         for i in range(3):
-            opinion_certainty_matrix[i, :] = opinion_certainty[i] * n_of_responders[i]
+            opinion_certainty_matrix[i, :] = opinion_certainty_matrix[i] * number_of_responders[i]
     else:
         opinion_certainty_matrix = np.ones_like(opinion_certainty_matrix)
 
-    The_primary_modelers_weights = transform_to_weight_table_primary_modeler(The_primary_modelers_scores, opinion_certainty_matrix, score_range_size, low_weight_for_unselected_features)
+    primary_modeler_weights = generate_primary_modeler_weights(primary_modeler_scores, opinion_certainty_matrix, score_range, initial_feature_weight)
 
-    Samsung_expert_opinion_weight_tables = np.zeros((3, score_range_size, 10))
+    samsung_expert_opinion_weights = np.zeros((3, score_range, 10))
     for i in range(10):
-        expert_opinion_weight_table = transform_to_weight_table_primary_expert(expert_opinions[i], np.ones((1,3)), score_range_size, 0)
+        expert_opinion_weight_table = generate_expert_weights(expert_opinions[i], np.ones((1,3)), score_range, 0)
         for j in range(3):
             for k in range(6):
-                Samsung_expert_opinion_weight_tables[j, k, i] = expert_opinion_weight_table[j,k]
+                samsung_expert_opinion_weights[j, k, i] = expert_opinion_weight_table[j,k]
     
-    Iphone_expert_opinion_weight_tables = np.zeros((3, score_range_size, 10))
+    iphone_expert_opinion_weights = np.zeros((3, score_range, 10))
     for i in range(10,20):
-        expert_opinion_weight_table = transform_to_weight_table_primary_expert(expert_opinions[i], np.ones((1,3)), score_range_size, 0)
+        expert_opinion_weight_table = generate_expert_weights(expert_opinions[i], np.ones((1,3)), score_range, 0)
         for j in range(3):
             for k in range(6):
-                Iphone_expert_opinion_weight_tables[j, k, i-10] = expert_opinion_weight_table[j,k]
+                iphone_expert_opinion_weights[j, k, i-10] = expert_opinion_weight_table[j,k]
 
-    Xiaomi_expert_opinion_weight_tables = np.zeros((3, score_range_size, 10))
+    xiaomi_expert_opinion_weights = np.zeros((3, score_range, 10))
     for i in range(20,30):
-        expert_opinion_weight_table = transform_to_weight_table_primary_expert(expert_opinions[i], np.ones((1,3)), score_range_size, 0)
+        expert_opinion_weight_table = generate_expert_weights(expert_opinions[i], np.ones((1,3)), score_range, 0)
         for j in range(3):
             for k in range(6):
-                Xiaomi_expert_opinion_weight_tables[j, k, i-20] = expert_opinion_weight_table[j,k]
+                xiaomi_expert_opinion_weights[j, k, i-20] = expert_opinion_weight_table[j,k]
 
-    Samsung_expert_opinion_weight_tables_trust = np.zeros_like(Samsung_expert_opinion_weight_tables)
-    for i in range(Samsung_expert_opinion_weight_tables.shape[2]):
-        Samsung_expert_opinion_weight_tables_trust[:,:,i] = Samsung_expert_opinion_weight_tables[:,:,i]*Trust_matrix[0,i]
+    samsung_expert_opinion_weights_trust = np.zeros_like(samsung_expert_opinion_weights)
+    for i in range(samsung_expert_opinion_weights.shape[2]):
+        samsung_expert_opinion_weights_trust[:,:,i] = samsung_expert_opinion_weights[:,:,i]*trust_matrix[0,i]
     
-    Iphone_expert_opinion_weight_tables_trust = np.zeros_like(Iphone_expert_opinion_weight_tables)
-    for i in range(Iphone_expert_opinion_weight_tables.shape[2]):
-        Iphone_expert_opinion_weight_tables_trust[:,:,i] = Iphone_expert_opinion_weight_tables[:,:,i]*Trust_matrix[1,i]
+    iphone_expert_opinion_weights_trust = np.zeros_like(iphone_expert_opinion_weights)
+    for i in range(iphone_expert_opinion_weights.shape[2]):
+        iphone_expert_opinion_weights_trust[:,:,i] = iphone_expert_opinion_weights[:,:,i]*trust_matrix[1,i]
     
-    Xiaomi_expert_opinion_weight_tables_trust = np.zeros_like(Xiaomi_expert_opinion_weight_tables)
-    for i in range(Xiaomi_expert_opinion_weight_tables.shape[2]):
-        Xiaomi_expert_opinion_weight_tables_trust[:,:,i] = Xiaomi_expert_opinion_weight_tables[:,:,i]*Trust_matrix[2,i]
+    xiaomi_expert_opinion_weights_trust = np.zeros_like(xiaomi_expert_opinion_weights)
+    for i in range(xiaomi_expert_opinion_weights.shape[2]):
+        xiaomi_expert_opinion_weights_trust[:,:,i] = xiaomi_expert_opinion_weights[:,:,i]*trust_matrix[2,i]
 
-    The_cumulative_expert_weight = np.zeros((3, score_range_size, 3))
-    The_cumulative_expert_weight[:, :, 0] = np.sum(Samsung_expert_opinion_weight_tables_trust, axis=2)
-    The_cumulative_expert_weight[:, :, 1] = np.sum(Iphone_expert_opinion_weight_tables_trust, axis=2)
-    The_cumulative_expert_weight[:, :, 2] = np.sum(Xiaomi_expert_opinion_weight_tables_trust, axis=2)
+    cumulative_expert_weights = np.zeros((3, score_range, 3))
+    cumulative_expert_weights[:, :, 0] = np.sum(samsung_expert_opinion_weights_trust, axis=2)
+    cumulative_expert_weights[:, :, 1] = np.sum(iphone_expert_opinion_weights_trust, axis=2)
+    cumulative_expert_weights[:, :, 2] = np.sum(xiaomi_expert_opinion_weights_trust, axis=2)
 
-    The_primary_modelers_updated_weights = The_cumulative_expert_weight + The_primary_modelers_weights
+    primary_modeler_updated_weights = cumulative_expert_weights + primary_modeler_weights
 
-    The_primary_modelers_opinion_features_old, The_primary_modelers_aposterior_old = primary_modelers_aposterior_B(The_primary_modelers_weights, P_I_B, score_preference)
-    The_primary_modelers_opinion_features_updated, The_primary_modelers_aposterior_updated = primary_modelers_aposterior_B(The_primary_modelers_updated_weights, P_I_B, score_preference)
+    primary_modeler_opinion_old, primary_modeler_posterior_old = primary_modelers_posterior_brands(primary_modeler_weights, primary_modeler_brand_pref, score_preference)
+    primary_modeler_opinion_updated, primary_modeler_posterior_updated = primary_modelers_posterior_brands(primary_modeler_updated_weights, primary_modeler_brand_pref, score_preference)
 
-    return The_primary_modelers_aposterior_old, The_primary_modelers_aposterior_updated
+    return primary_modeler_posterior_old, primary_modeler_posterior_updated

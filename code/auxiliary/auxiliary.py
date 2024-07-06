@@ -5,12 +5,6 @@ def generate_primary_modeler_weights(primary_modeler_scores, opinion_certainty_a
     primary_modeler_scores = np.atleast_2d(np.array(primary_modeler_scores))
     weight_table = np.full((primary_modeler_scores.shape[1], score_range, primary_modeler_scores.shape[0]), initial_feature_weight)
     
-    # for i in range(primary_modeler_scores.shape[0]):
-    #     for j in range(primary_modeler_scores.shape[1]):
-    #         if opinion_certainty_array[i] != 0 and primary_modeler_scores[i, j] != 0:
-    #             score = primary_modeler_scores[i, j] - 1  # Adjust for 0-based indexing
-    #             weight_table[j, score, i] += opinion_certainty_array[i]
-
     # Create boolean masks
     non_zero_certainty = opinion_certainty_array != 0
     non_zero_scores = primary_modeler_scores != 0
@@ -38,6 +32,14 @@ def generate_expert_weights(expert_scores, score_range, initial_feature_weight):
             if expert_scores[i, j] != 0:
                 score = expert_scores[i, j] - 1  # Adjust for 0-based indexing
                 weight_table[j, score, 0] += 1
+    
+    non_zero_scores = expert_scores != 0
+    
+    scores = expert_scores[non_zero_scores] - 1
+    
+    j_indices = np.where(scores)
+    
+    weight_table[j_indices, scores, 0] += 1
 
 
     return weight_table

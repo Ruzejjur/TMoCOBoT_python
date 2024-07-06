@@ -1,15 +1,31 @@
 import numpy as np
 
-def generate_primary_modeler_weights(primary_modeler_scores, opinion_certainty_matrix, score_range, initial_feature_weight):
+
+def generate_primary_modeler_weights(primary_modeler_scores, opinion_certainty_array, score_range, initial_feature_weight):
     primary_modeler_scores = np.atleast_2d(np.array(primary_modeler_scores))
     weight_table = np.full((primary_modeler_scores.shape[1], score_range, primary_modeler_scores.shape[0]), initial_feature_weight)
     
-    for i in range(primary_modeler_scores.shape[0]):
-        for j in range(primary_modeler_scores.shape[1]):
-            if opinion_certainty_matrix[i, j] != 0 and primary_modeler_scores[i, j] != 0:
-                score = primary_modeler_scores[i, j] - 1  # Adjust for 0-based indexing
-                weight_table[j, score, i] += opinion_certainty_matrix[i, j]
+    # for i in range(primary_modeler_scores.shape[0]):
+    #     for j in range(primary_modeler_scores.shape[1]):
+    #         if opinion_certainty_array[i] != 0 and primary_modeler_scores[i, j] != 0:
+    #             score = primary_modeler_scores[i, j] - 1  # Adjust for 0-based indexing
+    #             weight_table[j, score, i] += opinion_certainty_array[i]
 
+    # Create boolean masks
+    non_zero_certainty = opinion_certainty_array != 0
+    non_zero_scores = primary_modeler_scores != 0
+
+    # Combine masks
+    mask = non_zero_certainty[:, np.newaxis] & non_zero_scores
+
+    # Indices where both conditions are met
+    i_indices, j_indices = np.where(mask)
+
+    # Adjust scores
+    scores = primary_modeler_scores[mask] - 1  # Adjust for 0-based indexing
+
+    # Update weight_table
+    weight_table[j_indices, scores, i_indices] += opinion_certainty_array[i_indices]
 
     return weight_table
 
@@ -50,15 +66,15 @@ def compute_primary_modeler_posterior_brands(primary_modeler_weights, primary_mo
 
 def simulated_example(primary_modeler_scores, opinion_certainty_array, apply_certainty, number_of_responders,
                       trust_matrix, score_preference, primary_modeler_brand_pref, score_range, initial_feature_weight, *expert_opinions):
-    opinion_certainty_matrix = np.ones((3, 3))
-    
     if apply_certainty:
-        for i in range(3):
-            opinion_certainty_matrix[i, :] = opinion_certainty_array[i] * number_of_responders[i]
+        # Solving the issue of primary modelers opinion being diminished
+        opinion_certainty_array = opinion_certainty_array * number_of_responders
     else:
-        opinion_certainty_matrix = np.ones_like(opinion_certainty_matrix)
+        # Make sure that the opinion certainty array is ones (equvivalent to no certainty being applied)
+        opinion_certainty_array = np.ones_like(opinion_certainty_array)
 
-    primary_modeler_weights = generate_primary_modeler_weights(primary_modeler_scores, opinion_certainty_matrix, score_range, initial_feature_weight)
+    # Generating primary modelers weights
+    primary_modeler_weights = generate_primary_modeler_weights(primary_modeler_scores, opinion_certainty_array, score_range, initial_feature_weight)
 
     samsung_expert_opinion_weights = np.zeros((3, score_range, 10))
     for i in range(10):

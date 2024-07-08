@@ -41,15 +41,28 @@ def compute_primary_modeler_posterior_brands(primary_modeler_weights, primary_mo
     primary_modeler_posterior_brands = np.ones((primary_modeler_weights.shape[2],))
     primary_modeler_opinion_features = np.zeros_like(primary_modeler_weights)
 
-    for i in range(primary_modeler_weights.shape[2]):
-        for j in range(primary_modeler_weights.shape[0]):
-            primary_modeler_opinion_features[j, :, i] = primary_modeler_weights[j, :, i] / np.sum(primary_modeler_weights[j, :, i])
+    # Calculate the sum along the second dimension (axis=1) and keep the dimensions for broadcasting
+    sums = np.sum(primary_modeler_weights, axis=1, keepdims=True)
 
-    primary_modeler_preference_of_scores = primary_modeler_opinion_features.copy()
-    for i in range(primary_modeler_preference_of_scores.shape[0]):
-        primary_modeler_preference_of_scores[i, :primary_modeler_score_preference[i]-1, :] = 0
+    # Perform the division using broadcasting
+    primary_modeler_opinion_features = primary_modeler_weights / sums
 
-    max_probabilities_in_preference_matrix = np.max(primary_modeler_preference_of_scores, axis=1)
+    # Filter scores based on preferrence
+    # * This testing for speed showed that this is slower than for loop, but might be faster with larege datasets
+    
+    primary_modeler_preferred_scores = primary_modeler_opinion_features.copy()
+    # Create a mask
+    rows = np.arange(primary_modeler_preferred_scores.shape[1]).reshape(1,-1)
+
+    mask = rows[:, None] < (primary_modeler_score_preference - 1)[:, None].reshape(-1,1)
+    mask = mask.transpose(1,2,0)
+    
+    mask = np.broadcast_to(mask, (3, 6, 3))
+    
+    # Apply the mask
+    primary_modeler_preferred_scores[mask] = 0
+    
+    max_probabilities_in_preference_matrix = np.max(primary_modeler_preferred_scores, axis=1)
 
     for i in range(primary_modeler_weights.shape[2]):
         primary_modeler_posterior_brands[i] = np.prod(max_probabilities_in_preference_matrix[:, i]) * primary_modeler_brand_pref[i]

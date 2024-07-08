@@ -61,12 +61,15 @@ def compute_primary_modeler_posterior_brands(primary_modeler_weights, primary_mo
     
     # Apply the mask
     primary_modeler_preferred_scores[mask] = 0
+
+    # Calculating posterior distribution on brands
+    primary_modeler_posterior_brands = np.ones((primary_modeler_weights.shape[2],))
     
     max_probabilities_in_preference_matrix = np.max(primary_modeler_preferred_scores, axis=1)
-
-    for i in range(primary_modeler_weights.shape[2]):
-        primary_modeler_posterior_brands[i] = np.prod(max_probabilities_in_preference_matrix[:, i]) * primary_modeler_brand_pref[i]
-
+    max_probabilities_in_preference_matrix_product = np.prod(max_probabilities_in_preference_matrix, axis = 0)
+    
+    primary_modeler_posterior_brands = max_probabilities_in_preference_matrix_product * primary_modeler_brand_pref
+    
     primary_modeler_posterior_brands = primary_modeler_posterior_brands / np.sum(primary_modeler_posterior_brands)
     
     return primary_modeler_opinion_features, primary_modeler_posterior_brands

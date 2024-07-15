@@ -121,7 +121,7 @@ def simulated_example(primary_modeler_scores, opinion_certainty_array, apply_cer
 
     primary_modeler_updated_weights = cumulative_expert_weights + primary_modeler_weights
 
-    _ , primary_modeler_posterior_old = compute_primary_modeler_posterior_brands(primary_modeler_weights, primary_modeler_brand_pref, score_preference)
+    _ , primary_modeler_posterior_initial = compute_primary_modeler_posterior_brands(primary_modeler_weights, primary_modeler_brand_pref, score_preference)
     _ , primary_modeler_posterior_updated = compute_primary_modeler_posterior_brands(primary_modeler_updated_weights, primary_modeler_brand_pref, score_preference)
 
-    return primary_modeler_posterior_old, primary_modeler_posterior_updated
+    return primary_modeler_posterior_initial, primary_modeler_posterior_updated

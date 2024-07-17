@@ -22,7 +22,7 @@ def test_resulting_posterior(output_array, test_array, delta=1e-10):
         raise TypeError("Both input arrays must be of type np.ndarray.")
     
     # Perform element-wise comparison within the delta tolerance
-    return np.abs(output_array - test_array) < delta
+    return np.abs(output_array - test_array) <= delta
 
 
 ## Section 1: No opinion certainty and no trust in expert opinion

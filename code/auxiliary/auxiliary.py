@@ -15,12 +15,9 @@ def generate_primary_modeler_weights(primary_modeler_scores, opinion_certainty_a
     np.ndarray: A weight table adjusted by the primary modeler's scores and opinion certainty.
     """
 
-    # Ensure primary_modeler_scores is at least 2D
-    primary_modeler_scores = np.atleast_2d(np.array(primary_modeler_scores))
-
     # Initialize a weight table filled with the initial feature weight
     # Shape: (number of features, score_range, number of brands)
-    weight_table = np.full((primary_modeler_scores.shape[1], score_range, primary_modeler_scores.shape[0]), initial_feature_weight)
+    weight_table = np.full((primary_modeler_scores.shape[1], score_range, primary_modeler_scores.shape[0]), initial_feature_weight, dtype=np.float32)
     
     # Create boolean masks to identify non-zero certainty and non-zero scores
     non_zero_certainty = opinion_certainty_array != 0
@@ -54,12 +51,9 @@ def generate_expert_weights(expert_scores, score_range, initial_feature_weight):
     np.ndarray: A weight table adjusted by the expert scores.
     """
 
-    # Ensure expert_scores is at least 2D
-    expert_scores = np.atleast_2d(np.array(expert_scores))
-
     # Initialize a weight table filled with the initial feature weight
     # Shape: (number of features, score_range, number of experts)
-    weight_table = np.full((expert_scores.shape[1], score_range, expert_scores.shape[0]), initial_feature_weight)
+    weight_table = np.full((expert_scores.shape[1], score_range, expert_scores.shape[0]), initial_feature_weight, dtype=np.int8)
     
     # Create a boolean mask to identify non-zero scores
     non_zero_scores = expert_scores != 0
@@ -93,10 +87,10 @@ def compute_primary_modeler_posterior_brands(primary_modeler_weights, primary_mo
     """
 
     # Initialize posterior probabilities for brands as np.ndarray of ones
-    primary_modeler_posterior_brands = np.ones((primary_modeler_weights.shape[2],))
+    primary_modeler_posterior_brands = np.ones((primary_modeler_weights.shape[2],), dtype=np.float16)
     
     # Initialize opinion features for the primary modeler
-    primary_modeler_opinion_features = np.zeros_like(primary_modeler_weights)
+    primary_modeler_opinion_features = np.zeros_like(primary_modeler_weights, dtype=np.float16)
 
     # Calculate the sum along the second dimension (axis=1) and keep the dimensions for broadcasting
     sums = np.sum(primary_modeler_weights, axis=1, keepdims=True)
@@ -115,7 +109,7 @@ def compute_primary_modeler_posterior_brands(primary_modeler_weights, primary_mo
     # * primary_modeler_preferred_scores.shape[1] gives the number of possible scores (score range)
     # * np.arange creates an array of integers from 0 to (score range - 1)
     # * reshape(1, -1) changes the shape to (1, score range) for broadcasting purposes
-    rows = np.arange(primary_modeler_preferred_scores.shape[1]).reshape(1, -1)
+    rows = np.arange(primary_modeler_preferred_scores.shape[1], dtype=np.int8).reshape(1, -1)
 
     # Create a mask based on the primary modeler's score preferences
     # * primary_modeler_score_preference is an array of preferred scores for each feature
@@ -186,7 +180,7 @@ def simulated_example(primary_modeler_scores, opinion_certainty_array, apply_cer
         opinion_certainty_array = opinion_certainty_array * number_of_responders
     else:
         # Ensure that the opinion certainty array is ones (equivalent to no certainty being applied)
-        opinion_certainty_array = np.ones_like(opinion_certainty_array)
+        opinion_certainty_array = np.ones_like(opinion_certainty_array, dtype=np.float16)
 
     # Generate primary modeler's weights
     primary_modeler_weights = generate_primary_modeler_weights(primary_modeler_scores, opinion_certainty_array, score_range, initial_feature_weight)
@@ -207,7 +201,7 @@ def simulated_example(primary_modeler_scores, opinion_certainty_array, apply_cer
 
     # Create an array of expert indices for Samsung
     # This is essentially a range of numbers from 0 to the number of experts - 1
-    i_indices = np.arange(samsung_expert_opinion_weights.shape[2])
+    i_indices = np.arange(samsung_expert_opinion_weights.shape[2], dtype=np.int32)
 
     # Multiply the expert opinion weights by the corresponding trust values for Samsung
     # * Note 1: samsung_expert_opinion_weights is a 3D array where the third dimension represents different experts
@@ -218,7 +212,7 @@ def simulated_example(primary_modeler_scores, opinion_certainty_array, apply_cer
     ## * Apply trust matrix to expert opinion weights for iPhone
 
     # Create an array of expert indices for iPhone
-    i_indices = np.arange(iphone_expert_opinion_weights.shape[2])
+    i_indices = np.arange(iphone_expert_opinion_weights.shape[2], dtype=np.int32)
 
     # Multiply the expert opinion weights by the corresponding trust values for iPhone
     # * Note 1: iphone_expert_opinion_weights is a 3D array where the third dimension represents different experts
@@ -229,7 +223,7 @@ def simulated_example(primary_modeler_scores, opinion_certainty_array, apply_cer
     ## * Apply trust matrix to expert opinion weights for Xiaomi
 
     # Create an array of expert indices for Xiaomi
-    i_indices = np.arange(xiaomi_expert_opinion_weights.shape[2])
+    i_indices = np.arange(xiaomi_expert_opinion_weights.shape[2], dtype=np.int32)
 
     # Multiply the expert opinion weights by the corresponding trust values for Xiaomi
     # * Note 1: xiaomi_expert_opinion_weights is a 3D array where the third dimension represents different experts
@@ -244,7 +238,7 @@ def simulated_example(primary_modeler_scores, opinion_certainty_array, apply_cer
     # * - The first dimension represents the features.
     # * - The second dimension (score_range) represents the possible scores for each feature.
     # * - The third dimension represents the brands: Samsung, iPhone, and Xiaomi.
-    cumulative_expert_weights = np.zeros((3, score_range, 3))
+    cumulative_expert_weights = np.zeros((3, score_range, 3), dtype=np.float32)
 
     # Summing the trusted expert opinion weights for Samsung across all experts
     # and storing the result in the first slice of the cumulative weights array.

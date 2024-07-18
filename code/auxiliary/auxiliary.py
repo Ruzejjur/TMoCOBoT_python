@@ -101,9 +101,8 @@ def compute_primary_modeler_posterior_brands(primary_modeler_weights, primary_mo
     ## * Filter scores based on preferences
     # * Testing for speed showed that vector implementation is slower than for loop, but might be faster with large datasets
     
-    # Copy the normalized opinion features
-    # TODO: Inspect if this is viable, deepcopy is probably better
-    primary_modeler_preferred_scores = primary_modeler_opinion_features.copy()
+    # Create a different reference to primary_modeler_opinion_features for better readibility
+    primary_modeler_preferred_scores = primary_modeler_opinion_features
     
     # Generate an array of row indices corresponding to the scores
     # * primary_modeler_preferred_scores.shape[1] gives the number of possible scores (score range)

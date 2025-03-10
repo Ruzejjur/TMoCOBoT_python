@@ -2,6 +2,7 @@
 .DS_Stores
 *.csv
 *.png
+*.eps
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

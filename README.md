@@ -21,13 +21,13 @@ These parameters have been deliberately chosen to configure the system and demon
 The parameters associated with the primary modeller are as follows:
 
  - The preference score $r_{I,n}$ = 4 for all features.
- - The primary modeler's brand $P_{I}(B)$ preference follows a uniform distribution.
- - The primary modeler's opinion on brands $b\in{B}$ is established in the experimental setup.
- - The primary modeler's certainty $c_{I,b,n} \in \langle 0, 1 \rangle$ is established in the experimental setup.
- - The primary modeler's trust $t_{I,E_{i}} \in \langle 0, 1 \rangle$ is established in the experimental setup.
+ - The primary modeller's brand $P_{I}(B)$ preference follows a uniform distribution.
+ - The primary modeller's opinion on brands $b\in{B}$ is established in the experimental setup.
+ - The primary modeller's certainty $c_{I,b,n} \in \langle 0, 1 \rangle$ is established in the experimental setup.
+ - The primary modeller's trust $t_{I,E_{i}} \in \langle 0, 1 \rangle$ is established in the experimental setup.
 
 The preference score is set for simplicity, eliminating one hyperparameter to tune. 
-The primary modeler's brand preference $P_{I}(B)$ is configured to ensure that the choice of the brand $b\in{B}$ is not influenced by the primary modeller's bias.
+The primary modeller's brand preference $P_{I}(B)$ is configured to ensure that the choice of the brand $b\in{B}$ is not influenced by the primary modeller's bias.
 
 The expert opinions are manually setup in the main.ipynb file.
 

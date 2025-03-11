@@ -1,0 +1,12 @@
+name: TMoCOBoT
+channels:
+  - conda-forge
+dependencies:
+  - python
+  - jupyter
+  - numpy
+  - matplotlib
+  - pandas
+  - ipdb
+  - nbdime
+prefix: /opt/homebrew/Caskroom/miniforge/base/envs/TMoCOBoT
